@@ -356,7 +356,7 @@ export default class ArcadeServerSDK {
       throw error
     }
   }
-  
+
   /**
    * Locks a pool so that no more players can join, and any player that disconnects loses.
    */
