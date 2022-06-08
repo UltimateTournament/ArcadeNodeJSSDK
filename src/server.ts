@@ -34,7 +34,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -68,7 +68,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -107,7 +107,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -147,7 +147,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -186,7 +186,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -226,7 +226,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -268,7 +268,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -307,7 +307,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -343,7 +343,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -379,7 +379,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -418,7 +418,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
@@ -433,7 +433,7 @@ export default class ArcadeServerSDK {
   }
 
   /**
-   * Settles a pool with a winning player. This player will get all of the tokens within the pool.
+   * Settles a pool with a winning player. This player will get all of the tokens within the pool. All other players must have had `defeatPlayer()` called on them, otherwise this call will fail.
    * @param playerToken The token of the winning player
    * @param poolID The Pool ID
    */
@@ -460,7 +460,7 @@ export default class ArcadeServerSDK {
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode}`)
+          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
         }
 
         retryCount++
