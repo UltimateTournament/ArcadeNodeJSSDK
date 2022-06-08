@@ -1,0 +1,27 @@
+{
+  "name": "ArcadeNodeJSSDK",
+  "version": "1.0.0",
+  "description": "Ultimate Arcade NodeJS Game Server SDK",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UltimateTournament/ArcadeNodeJSSDK.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UltimateTournament/ArcadeNodeJSSDK/issues"
+  },
+  "homepage": "https://github.com/UltimateTournament/ArcadeNodeJSSDK#readme",
+  "devDependencies": {
+    "@types/node": "^17.0.41",
+    "nodemon": "^2.0.16",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.3"
+  }
+}
