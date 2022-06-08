@@ -1,5 +1,5 @@
 {
-  "name": "ArcadeNodeJSSDK",
+  "name": "ultimate-arcade-server-sdk",
   "version": "1.0.0",
   "description": "Ultimate Arcade NodeJS Game Server SDK",
   "main": "index.js",
