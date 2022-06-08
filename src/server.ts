@@ -12,6 +12,7 @@ export default class ArcadeServerSDK {
   debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
   playerToken = "" // get from connecting player
   heartbeatIndex: HeartbeatIndex = {}
+  poolHeartbeat?: NodeJS.Timer
 
   constructor() {
     dLog("starting arcade server sdk")
@@ -115,7 +116,12 @@ export default class ArcadeServerSDK {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
       }
-      // TODO: Launch heartbeat interval
+
+      // Launch heartbeat interval
+      this.heartbeatIndex[playerToken] = setTimeout(() => {
+        this.heartbeatSlip(playerToken)
+      }, 10000);
+
       return status as GetServerStatusResponse
     } catch (error) {
       throw error
@@ -194,6 +200,12 @@ export default class ArcadeServerSDK {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
       }
+
+      // Remove slip heartbeat
+      if (this.heartbeatIndex[playerToken]) {
+        clearTimeout(this.heartbeatIndex[playerToken])
+      }
+
       return status as GetServerStatusResponse
     } catch (error) {
       throw error
@@ -234,6 +246,12 @@ export default class ArcadeServerSDK {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
       }
+
+      // Remove slip heartbeat
+      if (this.heartbeatIndex[playerToken]) {
+        clearTimeout(this.heartbeatIndex[playerToken])
+      }
+
       return status as GetServerStatusResponse
     } catch (error) {
       throw error
@@ -276,6 +294,12 @@ export default class ArcadeServerSDK {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
       }
+
+      // Remove slip heartbeat
+      if (this.heartbeatIndex[defeatedPlayerToken]) {
+        clearTimeout(this.heartbeatIndex[defeatedPlayerToken])
+      }
+
       return status as GetServerStatusResponse
     } catch (error) {
       throw error
@@ -315,6 +339,12 @@ export default class ArcadeServerSDK {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
       }
+
+      // Remove slip heartbeat
+      if (this.heartbeatIndex[defeatedPlayerToken]) {
+        clearTimeout(this.heartbeatIndex[defeatedPlayerToken])
+      }
+
       return status as GetServerStatusResponse
     } catch (error) {
       throw error
@@ -355,6 +385,17 @@ export default class ArcadeServerSDK {
     } catch (error) {
       throw error
     }
+  }
+
+  /**
+   * Starts a background worker that will heartbeat the pool. The worker will automatically be stopped when a pool is settled. It will also immediately send an initial heartbeat.
+   * @param poolID The Pool ID
+   */
+  startPoolHeartbeatLoop(poolID: string) {
+    this.heartbeatPool(poolID)
+    this.poolHeartbeat = setInterval(() => {
+      this.heartbeatPool(poolID)
+    }, 10000)
   }
 
   /**
@@ -426,6 +467,11 @@ export default class ArcadeServerSDK {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
       }
+
+      // Stop the pool heartbeat
+      if (this.poolHeartbeat) {
+        clearTimeout(this.poolHeartbeat)
+      }
       return status as GetServerStatusResponse
     } catch (error) {
       throw error
@@ -467,6 +513,11 @@ export default class ArcadeServerSDK {
         if (retryCount >= 5) {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
+      }
+
+      // Stop the pool heartbeat
+      if (this.poolHeartbeat) {
+        clearTimeout(this.poolHeartbeat)
       }
       return status as GetServerStatusResponse
     } catch (error) {
