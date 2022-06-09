@@ -252,7 +252,7 @@ export default class ArcadeServerSDK {
         clearTimeout(this.heartbeatIndex[playerToken])
       }
 
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
