@@ -31,7 +31,7 @@ export default class ArcadeServerSDK {
             }, 200 * retryCount)
           })
         }
-        const res = await axios.post(this.url+'/api/server')
+        const res = await axios.get(this.url+'/api/server')
         status = res.data
         statuscode = res.status
         if (statuscode > 299 && statuscode < 500) {
