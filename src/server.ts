@@ -7,10 +7,8 @@ const SlipIDProp = "sid"
 
 export default class ArcadeServerSDK {
 
-  // TODO: Update to correct port
-  url = "http://localhost:8080"
+  url = process.env["UAHV_ADDR"] || "http://localhost:8083"
   debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
-  playerToken = "" // get from connecting player
   heartbeatIndex: HeartbeatIndex = {}
   poolHeartbeat?: NodeJS.Timer
 
@@ -21,27 +19,12 @@ export default class ArcadeServerSDK {
   async getServerStatus(): Promise<GetServerStatusResponse> {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
-        }
-        const res = await axios.get(this.url+'/api/server')
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      const res = await axios.get(this.url+'/api/server')
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
       return status as GetServerStatusResponse
     } catch (error) {
@@ -55,29 +38,12 @@ export default class ArcadeServerSDK {
   async shutdown()  {
     try {
       let statuscode = 0
-      let retryCount = 0
-      let status: GetServerStatusResponse | null = null
-      while (statuscode < 200 || statuscode >= 300) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
-        }
-        const res = await axios.post(this.url+'/api/server/shutdown')
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      const res = await axios.post(this.url+'/api/server/shutdown')
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
-      return
     } catch (error) {
       throw error
     }
@@ -90,31 +56,16 @@ export default class ArcadeServerSDK {
   async activateSlip(playerToken: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
+      const res = await axios.post(this.url+'/api/player/activate', {}, {
+        headers: {
+          'Authorization': `Bearer ${playerToken}`
         }
-        const res = await axios.post(this.url+'/api/player/activate', {}, {
-          headers: {
-            'Authorization': `Bearer ${playerToken}`
-          }
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
 
       // Launch heartbeat interval
@@ -135,31 +86,16 @@ export default class ArcadeServerSDK {
   private async heartbeatSlip(playerToken: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
+      const res = await axios.post(this.url+'/api/player/heartbeat', {}, {
+        headers: {
+          'Authorization': `Bearer ${playerToken}`
         }
-        const res = await axios.post(this.url+'/api/player/heartbeat', {}, {
-          headers: {
-            'Authorization': `Bearer ${playerToken}`
-          }
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
       return status as GetServerStatusResponse
     } catch (error) {
@@ -174,31 +110,16 @@ export default class ArcadeServerSDK {
   async settleSlip(playerToken: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
+      const res = await axios.post(this.url+'/api/player/settle', {}, {
+        headers: {
+          'Authorization': `Bearer ${playerToken}`
         }
-        const res = await axios.post(this.url+'/api/player/settle', {}, {
-          headers: {
-            'Authorization': `Bearer ${playerToken}`
-          }
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
 
       // Remove slip heartbeat
@@ -220,36 +141,15 @@ export default class ArcadeServerSDK {
   async reportPlayerScore(playerToken: string, scoreReport: ScoreReport) {
     try {
       let statuscode = 0
-      let retryCount = 0
-      let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
+      const res = await axios.post(this.url+'/api/player/report-score', scoreReport, {
+        headers: {
+          'Authorization': `Bearer ${playerToken}`
         }
-        const res = await axios.post(this.url+'/api/player/report-score', scoreReport, {
-          headers: {
-            'Authorization': `Bearer ${playerToken}`
-          }
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
-      }
-
-      // Remove slip heartbeat
-      if (this.heartbeatIndex[playerToken]) {
-        clearTimeout(this.heartbeatIndex[playerToken])
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
 
       return
@@ -266,33 +166,18 @@ export default class ArcadeServerSDK {
   async playerDefeated(defeatedPlayerToken: string, winningPlayerToken: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
+      const res = await axios.post(this.url+'/api/player/defeat', {
+        winner_token: winningPlayerToken
+      }, {
+        headers: {
+          'Authorization': `Bearer ${defeatedPlayerToken}`
         }
-        const res = await axios.post(this.url+'/api/player/defeat', {
-          winner_token: winningPlayerToken
-        }, {
-          headers: {
-            'Authorization': `Bearer ${defeatedPlayerToken}`
-          }
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
 
       // Remove slip heartbeat
@@ -313,31 +198,16 @@ export default class ArcadeServerSDK {
   async playerSelfDefeat(defeatedPlayerToken: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
+      const res = await axios.post(this.url+'/api/player/self-defeat', {}, {
+        headers: {
+          'Authorization': `Bearer ${defeatedPlayerToken}`
         }
-        const res = await axios.post(this.url+'/api/player/self-defeat', {}, {
-          headers: {
-            'Authorization': `Bearer ${defeatedPlayerToken}`
-          }
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
 
       // Remove slip heartbeat
@@ -357,29 +227,14 @@ export default class ArcadeServerSDK {
   private async heartbeatPool(poolID: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
-        }
-        const res = await axios.post(this.url+'/api/pool/heartbeat', {
-          pool_id: poolID
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      const res = await axios.post(this.url+'/api/pool/heartbeat', {
+        pool_id: poolID
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
       return status as GetServerStatusResponse
     } catch (error) {
@@ -404,29 +259,14 @@ export default class ArcadeServerSDK {
   async lockPool(poolID: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
-        }
-        const res = await axios.post(this.url+'/api/pool/lock', {
-          pool_id: poolID
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      const res = await axios.post(this.url+'/api/pool/lock', {
+        pool_id: poolID
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
       return status as GetServerStatusResponse
     } catch (error) {
@@ -442,30 +282,15 @@ export default class ArcadeServerSDK {
   async returnPool(poolID: string, reason: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
-        }
-        const res = await axios.post(this.url+'/api/pool/return', {
-          pool_id: poolID,
-          reason
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      const res = await axios.post(this.url+'/api/pool/return', {
+        pool_id: poolID,
+        reason
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
 
       // Stop the pool heartbeat
@@ -486,33 +311,18 @@ export default class ArcadeServerSDK {
   async settlePool(playerToken: string, poolID: string) {
     try {
       let statuscode = 0
-      let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
-        if (retryCount > 0) {
-          await new Promise((r) => {
-            setTimeout(() => {
-              r(null)
-            }, 200 * retryCount)
-          })
+      const res = await axios.post(this.url+'/api/pool/settle', {
+        pool_id: poolID
+      }, {
+        headers: {
+          'Authorization': `Bearer ${playerToken}`
         }
-        const res = await axios.post(this.url+'/api/pool/settle', {
-          pool_id: poolID
-        }, {
-          headers: {
-            'Authorization': `Bearer ${playerToken}`
-          }
-        })
-        status = res.data
-        statuscode = res.status
-        if (statuscode > 299 && statuscode < 500) {
-          throw new Error(`server returned ${statuscode} - ${res.statusText}`)
-        }
-
-        retryCount++
-        if (retryCount >= 5) {
-          throw new Error(`max retries hit, exiting with status code ${statuscode}`)
-        }
+      })
+      status = res.data
+      statuscode = res.status
+      if (statuscode > 299 && statuscode < 500) {
+        throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
 
       // Stop the pool heartbeat
