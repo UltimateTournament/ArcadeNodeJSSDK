@@ -77,7 +77,7 @@ export default class ArcadeServerSDK {
           throw new Error(`max retries hit, exiting with status code ${statuscode}`)
         }
       }
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
