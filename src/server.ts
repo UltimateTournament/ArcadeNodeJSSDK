@@ -57,7 +57,7 @@ export default class ArcadeServerSDK {
       let statuscode = 0
       let retryCount = 0
       let status: GetServerStatusResponse | null = null
-      while (statuscode !== 200) {
+      while (statuscode < 200 || statuscode >= 300) {
         if (retryCount > 0) {
           await new Promise((r) => {
             setTimeout(() => {
