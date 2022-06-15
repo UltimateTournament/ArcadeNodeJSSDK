@@ -1,6 +1,6 @@
 {
   "name": "@ultimatearcade/server-sdk",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Ultimate Arcade NodeJS Game Server SDK",
   "main": "index.js",
   "scripts": {
