@@ -1,6 +1,6 @@
 import { dLog } from './logging'
 import axios from 'axios'
-import { GetServerStatusResponse, HeartbeatIndex, ScoreReport } from './types'
+import { ActivateSlipResponse, GetServerStatusResponse, HeartbeatIndex, ScoreReport } from './types'
 
 const PlayerIDProp = "pid"
 const SlipIDProp = "sid"
@@ -19,14 +19,12 @@ export default class ArcadeServerSDK {
   async getServerStatus(): Promise<GetServerStatusResponse> {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.get(this.url+'/api/server')
-      status = res.data
+      const res = await axios.get(this.url + '/api/server')
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
-      return status as GetServerStatusResponse
+      return res.data as GetServerStatusResponse
     } catch (error) {
       throw error
     }
@@ -35,10 +33,10 @@ export default class ArcadeServerSDK {
   /**
    * Shuts down the game server. The hypervisor will send a termination signal to the server shortly after.
    */
-  async shutdown()  {
+  async shutdown() {
     try {
       let statuscode = 0
-      const res = await axios.post(this.url+'/api/server/shutdown')
+      const res = await axios.post(this.url + '/api/server/shutdown')
       status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
@@ -56,13 +54,11 @@ export default class ArcadeServerSDK {
   async activateSlip(playerToken: string) {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/player/activate', {}, {
+      const res = await axios.post(this.url + '/api/player/activate', {}, {
         headers: {
           'Authorization': `Bearer ${playerToken}`
         }
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
@@ -73,7 +69,7 @@ export default class ArcadeServerSDK {
         this.heartbeatSlip(playerToken)
       }, 10000);
 
-      return status as GetServerStatusResponse
+      return res.data as ActivateSlipResponse
     } catch (error) {
       throw error
     }
@@ -86,18 +82,16 @@ export default class ArcadeServerSDK {
   private async heartbeatSlip(playerToken: string) {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/player/heartbeat', {}, {
+      const res = await axios.post(this.url + '/api/player/heartbeat', {}, {
         headers: {
           'Authorization': `Bearer ${playerToken}`
         }
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
@@ -110,13 +104,11 @@ export default class ArcadeServerSDK {
   async settleSlip(playerToken: string) {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/player/settle', {}, {
+      const res = await axios.post(this.url + '/api/player/settle', {}, {
         headers: {
           'Authorization': `Bearer ${playerToken}`
         }
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
@@ -141,12 +133,11 @@ export default class ArcadeServerSDK {
   async reportPlayerScore(playerToken: string, scoreReport: ScoreReport) {
     try {
       let statuscode = 0
-      const res = await axios.post(this.url+'/api/player/report-score', scoreReport, {
+      const res = await axios.post(this.url + '/api/player/report-score', scoreReport, {
         headers: {
           'Authorization': `Bearer ${playerToken}`
         }
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
@@ -166,15 +157,13 @@ export default class ArcadeServerSDK {
   async playerDefeated(defeatedPlayerToken: string, winningPlayerToken: string) {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/player/defeat', {
+      const res = await axios.post(this.url + '/api/player/defeat', {
         winner_token: winningPlayerToken
       }, {
         headers: {
           'Authorization': `Bearer ${defeatedPlayerToken}`
         }
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
@@ -198,13 +187,11 @@ export default class ArcadeServerSDK {
   async playerSelfDefeat(defeatedPlayerToken: string) {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/player/self-defeat', {}, {
+      const res = await axios.post(this.url + '/api/player/self-defeat', {}, {
         headers: {
           'Authorization': `Bearer ${defeatedPlayerToken}`
         }
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
@@ -215,7 +202,7 @@ export default class ArcadeServerSDK {
         clearTimeout(this.heartbeatIndex[defeatedPlayerToken])
       }
 
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
@@ -224,19 +211,16 @@ export default class ArcadeServerSDK {
   /**
    * Close player session as they lost against the environment (ex: ran into a wall). They will lose some of their tokens.
    */
-  private async heartbeatPool(poolID: string) {
+  private async heartbeatPool() {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/pool/heartbeat', {
-        pool_id: poolID
+      const res = await axios.post(this.url + '/api/pool/heartbeat', {
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
@@ -244,31 +228,27 @@ export default class ArcadeServerSDK {
 
   /**
    * Starts a background worker that will heartbeat the pool. The worker will automatically be stopped when a pool is settled. It will also immediately send an initial heartbeat.
-   * @param poolID The Pool ID
    */
-  startPoolHeartbeatLoop(poolID: string) {
-    this.heartbeatPool(poolID)
+  startPoolHeartbeatLoop() {
+    this.heartbeatPool()
     this.poolHeartbeat = setInterval(() => {
-      this.heartbeatPool(poolID)
+      this.heartbeatPool()
     }, 10000)
   }
 
   /**
    * Locks a pool so that no more players can join, and any player that disconnects loses.
    */
-  async lockPool(poolID: string) {
+  async lockPool() {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/pool/lock', {
-        pool_id: poolID
+      const res = await axios.post(this.url + '/api/pool/lock', {
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
@@ -276,18 +256,14 @@ export default class ArcadeServerSDK {
 
   /**
    * Returns a pool when no winner can be determined. All remaining players will have the pool tokens evenly distributed. Players that have already lose will not get their tokens returned.
-   * @param poolID The Pool ID
    * @param reason The reason that the pool was returned. For example 'players tied'
    */
-  async returnPool(poolID: string, reason: string) {
+  async returnPool( reason: string) {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/pool/return', {
-        pool_id: poolID,
+      const res = await axios.post(this.url + '/api/pool/return', {
         reason
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
@@ -297,7 +273,7 @@ export default class ArcadeServerSDK {
       if (this.poolHeartbeat) {
         clearTimeout(this.poolHeartbeat)
       }
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
@@ -306,20 +282,16 @@ export default class ArcadeServerSDK {
   /**
    * Settles a pool with a winning player. This player will get all of the tokens within the pool. All other players must have had `defeatPlayer()` called on them, otherwise this call will fail.
    * @param playerToken The token of the winning player
-   * @param poolID The Pool ID
    */
-  async settlePool(playerToken: string, poolID: string) {
+  async settlePool(playerToken: string) {
     try {
       let statuscode = 0
-      let status: GetServerStatusResponse | null = null
-      const res = await axios.post(this.url+'/api/pool/settle', {
-        pool_id: poolID
+      const res = await axios.post(this.url + '/api/pool/settle', {
       }, {
         headers: {
           'Authorization': `Bearer ${playerToken}`
         }
       })
-      status = res.data
       statuscode = res.status
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
@@ -329,7 +301,7 @@ export default class ArcadeServerSDK {
       if (this.poolHeartbeat) {
         clearTimeout(this.poolHeartbeat)
       }
-      return status as GetServerStatusResponse
+      return
     } catch (error) {
       throw error
     }
