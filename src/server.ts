@@ -228,7 +228,6 @@ export default class ArcadeServerSDK {
 
   /**
    * Starts a background worker that will heartbeat the pool. The worker will automatically be stopped when a pool is settled. It will also immediately send an initial heartbeat.
-   * @param poolID The Pool ID
    */
   startPoolHeartbeatLoop() {
     this.heartbeatPool()
@@ -257,7 +256,6 @@ export default class ArcadeServerSDK {
 
   /**
    * Returns a pool when no winner can be determined. All remaining players will have the pool tokens evenly distributed. Players that have already lose will not get their tokens returned.
-   * @param poolID The Pool ID
    * @param reason The reason that the pool was returned. For example 'players tied'
    */
   async returnPool( reason: string) {
@@ -284,7 +282,6 @@ export default class ArcadeServerSDK {
   /**
    * Settles a pool with a winning player. This player will get all of the tokens within the pool. All other players must have had `defeatPlayer()` called on them, otherwise this call will fail.
    * @param playerToken The token of the winning player
-   * @param poolID The Pool ID
    */
   async settlePool(playerToken: string) {
     try {
