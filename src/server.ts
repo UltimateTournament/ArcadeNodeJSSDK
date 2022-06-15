@@ -1,5 +1,5 @@
 import { dLog } from './logging'
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { ActivateSlipResponse, GetServerStatusResponse, HeartbeatIndex, ScoreReport } from './types'
 
 const PlayerIDProp = "pid"
@@ -19,8 +19,28 @@ export default class ArcadeServerSDK {
   async getServerStatus(): Promise<GetServerStatusResponse> {
     try {
       let statuscode = 0
-      const res = await axios.get(this.url + '/api/server')
-      statuscode = res.status
+      let res: AxiosResponse | null = null
+      // Retry up to 25 times, linear back-off
+      for (let attempts = 0; attempts < 25; attempts++) {
+        res = await axios.get(this.url + '/api/server') as AxiosResponse
+        statuscode = res.status
+        if (statuscode === 502) {
+          // Server not ready yet, try again
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve(null)
+            }, 500) // 500ms linear backoff
+          })
+        } else {
+          // Some other code not for retrying
+          break
+        }
+      }
+
+      if (!res) {
+        throw new Error("could not get response for /api/server call!")
+      }
+
       if (statuscode > 299 && statuscode < 500) {
         throw new Error(`server returned ${statuscode} - ${res.statusText}`)
       }
