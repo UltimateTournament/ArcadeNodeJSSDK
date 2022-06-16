@@ -2,7 +2,7 @@ export interface GetServerStatusResponse {
   random_seed: string
 }
 
-export interface ActivateSlipResponse {
+export interface ActivatePlayerResponse {
   display_name: string
 }
 

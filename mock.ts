@@ -1,4 +1,4 @@
-import { ActivateSlipResponse, GetServerStatusResponse, ScoreReport } from './types'
+import { ActivatePlayerResponse, GetServerStatusResponse, ScoreReport } from './types'
 
 export default class Mock {
 
@@ -15,13 +15,13 @@ export default class Mock {
   async shutdown() {
   }
 
-  async activateSlip(playerToken: string): Promise<ActivateSlipResponse> {
+  async activatePlayer(playerToken: string): Promise<ActivatePlayerResponse> {
     return {
       display_name: "Mock Player",
     }
   }
 
-  async settleSlip(playerToken: string): Promise<void> {
+  async settlePlayer(playerToken: string): Promise<void> {
   }
 
   async reportPlayerScore(playerToken: string, scoreReport: ScoreReport): Promise<void> {

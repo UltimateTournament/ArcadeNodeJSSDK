@@ -1,6 +1,6 @@
 import { dLog } from './logging'
 import axios from 'axios'
-import { ActivateSlipResponse, GetServerStatusResponse, ScoreReport } from './types'
+import { ActivatePlayerResponse as ActivatePlayerResponse, GetServerStatusResponse, ScoreReport } from './types'
 
 export interface ArcadeServerSDK {
   getServerStatus(): Promise<GetServerStatusResponse>
@@ -11,16 +11,16 @@ export interface ArcadeServerSDK {
   shutdown(): Promise<void>
 
   /**
-   * Activates a player slip, returns information about the player
+   * Activates a player's session, returns information about the player
    * @param playerToken The token provided by the player during connection
    */
-  activateSlip(playerToken: string): Promise<ActivateSlipResponse>
+  activatePlayer(playerToken: string): Promise<ActivatePlayerResponse>
   
   /**
-   * Settle the player's slip without them being defeated. Used when they want to cash-out of a long-running game.
+   * Settle the player's session without them being defeated. Used when they want to cash-out of a long-running game.
    * @param playerToken The player's token
    */
-  settleSlip(playerToken: string): Promise<void>
+  settlePlayer(playerToken: string): Promise<void>
   
   /**
    * Close player session and report score. This should only be used for Leaderboard games (where it's the only call that should be used to close the session)
@@ -99,8 +99,8 @@ export class arcadeServerSDK {
     await axios.post(this.url + '/api/server/shutdown')
   }
 
-  async activateSlip(playerToken: string): Promise<ActivateSlipResponse> {
-    const res = await axios.post<ActivateSlipResponse>(this.url + '/api/player/activate', {}, {
+  async activatePlayer(playerToken: string): Promise<ActivatePlayerResponse> {
+    const res = await axios.post<ActivatePlayerResponse>(this.url + '/api/player/activate', {}, {
       headers: {
         'Authorization': `Bearer ${playerToken}`
       }
@@ -126,7 +126,7 @@ export class arcadeServerSDK {
     })
   }
 
-  async settleSlip(playerToken: string): Promise<void> {
+  async settlePlayer(playerToken: string): Promise<void> {
     await axios.post(this.url + '/api/player/settle', {}, {
       headers: {
         'Authorization': `Bearer ${playerToken}`
