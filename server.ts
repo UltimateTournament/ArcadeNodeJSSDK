@@ -1,13 +1,81 @@
 import { dLog } from './logging'
 import axios from 'axios'
-import { ActivateSlipResponse, GetServerStatusResponse, HeartbeatIndex, ScoreReport } from './types'
+import { ActivateSlipResponse, GetServerStatusResponse, ScoreReport } from './types'
 
-export default class ArcadeServerSDK {
+export interface ArcadeServerSDK {
+  getServerStatus(): Promise<GetServerStatusResponse>
+  
+  /**
+   * Shuts down the game server. The hypervisor will send a termination signal to the server shortly after.
+   */
+  shutdown(): Promise<void>
 
-  url = process.env["UAHV_ADDR"] || "http://localhost:8083"
-  debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
-  heartbeatIndex: HeartbeatIndex = {}
-  poolHeartbeat?: NodeJS.Timer
+  /**
+   * Activates a player slip, returns information about the player
+   * @param playerToken The token provided by the player during connection
+   */
+  activateSlip(playerToken: string): Promise<ActivateSlipResponse>
+  
+  /**
+   * Settle the player's slip without them being defeated. Used when they want to cash-out of a long-running game.
+   * @param playerToken The player's token
+   */
+  settleSlip(playerToken: string): Promise<void>
+  
+  /**
+   * Close player session and report score. This should only be used for Leaderboard games (where it's the only call that should be used to close the session)
+   * @param playerToken The player's token
+   * @param scoreReport The player's score
+   */
+  reportPlayerScore(playerToken: string, scoreReport: ScoreReport): Promise<void>
+  
+  /**
+   * Close player session as they lost against someone
+   * @param defeatedPlayerToken The defeated player's token
+   * @param winningPlayerToken The winning player's token
+   */
+  playerDefeated(defeatedPlayerToken: string, winningPlayerToken: string): Promise<void>
+  
+  /**
+   * Close player session as they lost against the environment (ex: ran into a wall). They will lose some of their tokens.
+   * @param defeatedPlayerToken The defeated player's token
+   */
+  playerSelfDefeat(defeatedPlayerToken: string): Promise<void>
+  
+  /**
+   * Keep Pool open
+   */
+  heartbeatPool(): Promise<void>
+  
+  /**
+   * Starts a background worker that will heartbeat the pool. The worker will automatically be stopped when a pool is settled. It will also immediately send an initial heartbeat.
+   */
+  startPoolHeartbeatLoop(): void
+  
+  /**
+   * Locks a pool so that no more players can join, and any player that disconnects loses.
+   */
+  lockPool(): Promise<void>
+  
+  /**
+   * Returns a pool when no winner can be determined. All remaining players will have the pool tokens evenly distributed. Players that have already lose will not get their tokens returned.
+   * @param reason The reason that the pool was returned. For example 'players tied'
+   */
+  returnPool(reason: string): Promise<void>
+  
+  /**
+   * Settles a pool with a winning player. This player will get all of the tokens within the pool. All other players must have had `defeatPlayer()` called on them, otherwise this call will fail.
+   * @param playerToken The token of the winning player
+   */
+  settlePool(playerToken: string): Promise<void>
+}
+
+export class arcadeServerSDK {
+
+  private url = process.env["UAHV_ADDR"] || "http://localhost:8083"
+  private debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
+  private heartbeatIndex: Record<string, NodeJS.Timer> = {}
+  private poolHeartbeat?: NodeJS.Timer
 
   constructor() {
     dLog("starting arcade server sdk")
@@ -27,17 +95,10 @@ export default class ArcadeServerSDK {
     }
   }
 
-  /**
-   * Shuts down the game server. The hypervisor will send a termination signal to the server shortly after.
-   */
   async shutdown() {
     await axios.post(this.url + '/api/server/shutdown')
   }
 
-  /**
-   * Activates a player slip, returns information about the player
-   * @param playerToken The token provided by the player during connection
-   */
   async activateSlip(playerToken: string): Promise<ActivateSlipResponse> {
     const res = await axios.post<ActivateSlipResponse>(this.url + '/api/player/activate', {}, {
       headers: {
@@ -65,10 +126,6 @@ export default class ArcadeServerSDK {
     })
   }
 
-  /**
-   * Settle the player's slip without them being defeated. Used when they want to cash-out of a long-running game.
-   * @param playerToken The player's token
-   */
   async settleSlip(playerToken: string): Promise<void> {
     await axios.post(this.url + '/api/player/settle', {}, {
       headers: {
@@ -82,11 +139,6 @@ export default class ArcadeServerSDK {
     }
   }
 
-  /**
-   * Close player session and report score. This should only be used for Leaderboard games (where it's the only call that should be used to close the session)
-   * @param playerToken The player's token
-   * @param scoreReport The player's score
-   */
   async reportPlayerScore(playerToken: string, scoreReport: ScoreReport): Promise<void> {
     await axios.post(this.url + '/api/player/report-score', scoreReport, {
       headers: {
@@ -95,11 +147,6 @@ export default class ArcadeServerSDK {
     })
   }
 
-  /**
-   * Close player session as they lost against someone
-   * @param defeatedPlayerToken The defeated player's token
-   * @param winningPlayerToken The winning player's token
-   */
   async playerDefeated(defeatedPlayerToken: string, winningPlayerToken: string): Promise<void> {
     await axios.post(this.url + '/api/player/defeat', {
       winner_token: winningPlayerToken
@@ -114,10 +161,6 @@ export default class ArcadeServerSDK {
     }
   }
 
-  /**
-   * Close player session as they lost against the environment (ex: ran into a wall). They will lose some of their tokens.
-   * @param defeatedPlayerToken The defeated player's token
-   */
   async playerSelfDefeat(defeatedPlayerToken: string): Promise<void> {
     await axios.post(this.url + '/api/player/self-defeat', {}, {
       headers: {
@@ -126,17 +169,11 @@ export default class ArcadeServerSDK {
     })
   }
 
-  /**
-   * Close player session as they lost against the environment (ex: ran into a wall). They will lose some of their tokens.
-   */
   async heartbeatPool(): Promise<void> {
     await axios.post(this.url + '/api/pool/heartbeat', {
     })
   }
 
-  /**
-   * Starts a background worker that will heartbeat the pool. The worker will automatically be stopped when a pool is settled. It will also immediately send an initial heartbeat.
-   */
   startPoolHeartbeatLoop(): void {
     this.heartbeatPool()
     this.poolHeartbeat = setInterval(() => {
@@ -144,18 +181,11 @@ export default class ArcadeServerSDK {
     }, 10000)
   }
 
-  /**
-   * Locks a pool so that no more players can join, and any player that disconnects loses.
-   */
   async lockPool(): Promise<void> {
     await axios.post(this.url + '/api/pool/lock', {
     })
   }
 
-  /**
-   * Returns a pool when no winner can be determined. All remaining players will have the pool tokens evenly distributed. Players that have already lose will not get their tokens returned.
-   * @param reason The reason that the pool was returned. For example 'players tied'
-   */
   async returnPool(reason: string): Promise<void> {
     await axios.post(this.url + '/api/pool/return', {
       reason
@@ -166,10 +196,6 @@ export default class ArcadeServerSDK {
     }
   }
 
-  /**
-   * Settles a pool with a winning player. This player will get all of the tokens within the pool. All other players must have had `defeatPlayer()` called on them, otherwise this call will fail.
-   * @param playerToken The token of the winning player
-   */
   async settlePool(playerToken: string): Promise<void> {
     await axios.post(this.url + '/api/pool/settle', {
     }, {
