@@ -2,6 +2,10 @@ import { ActivateSlipResponse, GetServerStatusResponse, ScoreReport } from './ty
 
 export default class Mock {
 
+  constructor() {
+    console.log("UA SDK running in mock mode")
+  }
+
   async getServerStatus(): Promise<GetServerStatusResponse> {
     return  {
       random_seed: "not-random",

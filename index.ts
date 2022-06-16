@@ -1,8 +1,8 @@
 import type { ActivateSlipResponse, GetServerStatusResponse, ScoreReport } from "./types"
 import Mock from "./mock"
-import ArcadeServerSDK from "./server";
+import { ArcadeServerSDK, arcadeServerSDK } from "./server";
 
-const UASDK: ArcadeServerSDK | Mock = process.env.UA_MOCK_MODE === "MOCK" ? new Mock() : new ArcadeServerSDK();
+const UASDK: ArcadeServerSDK = process.env.UA_MOCK_MODE === "MOCK" ? new Mock() : new arcadeServerSDK();
 const getSDK = () => UASDK;
 
 export { getSDK, ActivateSlipResponse, GetServerStatusResponse, ScoreReport }

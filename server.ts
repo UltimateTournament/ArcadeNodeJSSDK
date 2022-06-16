@@ -2,7 +2,22 @@ import { dLog } from './logging'
 import axios from 'axios'
 import { ActivateSlipResponse, GetServerStatusResponse, ScoreReport } from './types'
 
-export default class ArcadeServerSDK {
+export interface ArcadeServerSDK {
+  getServerStatus(): Promise<GetServerStatusResponse>
+  shutdown(): Promise<void>
+  activateSlip(playerToken: string): Promise<ActivateSlipResponse>
+  settleSlip(playerToken: string): Promise<void>
+  reportPlayerScore(playerToken: string, scoreReport: ScoreReport): Promise<void>
+  playerDefeated(defeatedPlayerToken: string, winningPlayerToken: string): Promise<void>
+  playerSelfDefeat(defeatedPlayerToken: string): Promise<void>
+  heartbeatPool(): Promise<void>
+  startPoolHeartbeatLoop(): void
+  lockPool(): Promise<void>
+  returnPool(reason: string): Promise<void>
+  settlePool(playerToken: string): Promise<void>
+}
+
+export class arcadeServerSDK {
 
   private url = process.env["UAHV_ADDR"] || "http://localhost:8083"
   private debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
