@@ -5,6 +5,6 @@ const debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
  */
 export function dLog(...args: any) {
   if (debug) {
-    console.log('ARCADE_DEBUG:', ...args)
+    console.log('ARCADE_DEBUG: ', ...args)
   }
 }
