@@ -1,13 +1,13 @@
 import { dLog } from './logging'
 import axios from 'axios'
-import { ActivateSlipResponse, GetServerStatusResponse, HeartbeatIndex, ScoreReport } from './types'
+import { ActivateSlipResponse, GetServerStatusResponse, ScoreReport } from './types'
 
 export default class ArcadeServerSDK {
 
-  url = process.env["UAHV_ADDR"] || "http://localhost:8083"
-  debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
-  heartbeatIndex: HeartbeatIndex = {}
-  poolHeartbeat?: NodeJS.Timer
+  private url = process.env["UAHV_ADDR"] || "http://localhost:8083"
+  private debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
+  private heartbeatIndex: Record<string, NodeJS.Timer> = {}
+  private poolHeartbeat?: NodeJS.Timer
 
   constructor() {
     dLog("starting arcade server sdk")
