@@ -43,16 +43,6 @@ export interface ArcadeServerSDK {
   playerSelfDefeat(defeatedPlayerToken: string): Promise<void>
   
   /**
-   * Keep Pool open
-   */
-  heartbeatPool(): Promise<void>
-  
-  /**
-   * Starts a background worker that will heartbeat the pool. The worker will automatically be stopped when a pool is settled. It will also immediately send an initial heartbeat.
-   */
-  startPoolHeartbeatLoop(): void
-  
-  /**
    * Locks a pool so that no more players can join, and any player that disconnects loses.
    */
   lockPool(): Promise<void>
@@ -74,8 +64,6 @@ export class arcadeServerSDK {
 
   private url = process.env["UAHV_ADDR"] || "http://localhost:8083"
   private debug = process.env['ARCADE_DEBUG'] === '1' // debug logging
-  private heartbeatIndex: Record<string, NodeJS.Timer> = {}
-  private poolHeartbeat?: NodeJS.Timer
 
   constructor() {
     dLog("starting arcade server sdk")
@@ -105,25 +93,7 @@ export class arcadeServerSDK {
         'Authorization': `Bearer ${playerToken}`
       }
     })
-
-    // Launch heartbeat interval
-    this.heartbeatIndex[playerToken] = setTimeout(() => {
-      this.heartbeatSlip(playerToken)
-    }, 10000);
-
     return res.data
-  }
-
-  /**
-   * Heartbeats a player's slip
-   * @param playerToken The player's token
-   */
-  private async heartbeatSlip(playerToken: string): Promise<void> {
-    await axios.post(this.url + '/api/player/heartbeat', {}, {
-      headers: {
-        'Authorization': `Bearer ${playerToken}`
-      }
-    })
   }
 
   async settlePlayer(playerToken: string): Promise<void> {
@@ -132,11 +102,6 @@ export class arcadeServerSDK {
         'Authorization': `Bearer ${playerToken}`
       }
     })
-
-    // Remove slip heartbeat
-    if (this.heartbeatIndex[playerToken]) {
-      clearTimeout(this.heartbeatIndex[playerToken])
-    }
   }
 
   async reportPlayerScore(playerToken: string, scoreReport: ScoreReport): Promise<void> {
@@ -155,10 +120,6 @@ export class arcadeServerSDK {
         'Authorization': `Bearer ${defeatedPlayerToken}`
       }
     })
-    // Remove slip heartbeat
-    if (this.heartbeatIndex[defeatedPlayerToken]) {
-      clearTimeout(this.heartbeatIndex[defeatedPlayerToken])
-    }
   }
 
   async playerSelfDefeat(defeatedPlayerToken: string): Promise<void> {
@@ -167,18 +128,6 @@ export class arcadeServerSDK {
         'Authorization': `Bearer ${defeatedPlayerToken}`
       }
     })
-  }
-
-  async heartbeatPool(): Promise<void> {
-    await axios.post(this.url + '/api/pool/heartbeat', {
-    })
-  }
-
-  startPoolHeartbeatLoop(): void {
-    this.heartbeatPool()
-    this.poolHeartbeat = setInterval(() => {
-      this.heartbeatPool()
-    }, 10000)
   }
 
   async lockPool(): Promise<void> {
@@ -190,10 +139,6 @@ export class arcadeServerSDK {
     await axios.post(this.url + '/api/pool/return', {
       reason
     })
-    // Stop the pool heartbeat
-    if (this.poolHeartbeat) {
-      clearTimeout(this.poolHeartbeat)
-    }
   }
 
   async settlePool(playerToken: string): Promise<void> {
@@ -203,11 +148,6 @@ export class arcadeServerSDK {
         'Authorization': `Bearer ${playerToken}`
       }
     })
-
-    // Stop the pool heartbeat
-    if (this.poolHeartbeat) {
-      clearTimeout(this.poolHeartbeat)
-    }
   }
 
 }

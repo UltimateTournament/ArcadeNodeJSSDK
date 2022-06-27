@@ -18,6 +18,7 @@ export default class Mock {
   async activatePlayer(playerToken: string): Promise<ActivatePlayerResponse> {
     return {
       display_name: "Mock Player",
+      player_id: "p1",
     }
   }
 
@@ -31,12 +32,6 @@ export default class Mock {
   }
 
   async playerSelfDefeat(defeatedPlayerToken: string): Promise<void> {
-  }
-
-  async heartbeatPool(): Promise<void> {
-  }
-
-  startPoolHeartbeatLoop(): void {
   }
 
   async lockPool(): Promise<void> {
