@@ -4,6 +4,7 @@ export interface GetServerStatusResponse {
 
 export interface ActivatePlayerResponse {
   display_name: string
+  player_id: string
 }
 
 export interface ScoreReport {
